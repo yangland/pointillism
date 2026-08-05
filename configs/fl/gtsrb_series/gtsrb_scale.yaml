@@ -1,0 +1,118 @@
+device: cuda
+seed: null
+debug_probes: false
+defense:
+- deepsight
+task:
+  dataset: gtsrb
+  img_size:
+  - 32
+  - 32
+  channels: 3
+model:
+  model_name: resnet20
+  num_classes: 43
+train:
+  rounds: 200
+  local_epochs: 1
+  batch_size: 64
+  optimizer: sgd
+  lr: 0.005
+  momentum: 0.9
+  weight_decay: 0.0005
+  server_lr: 1.0
+clients_setting:
+  clients: 100
+  clients_per_round: 10
+  mali_rate: 0.3
+  sampling_method: fixed_rate
+  non_iid_mode: dirichlet
+  non_iid:
+    labels_per_client: 10
+    dirichlet_alpha: 0.5
+agg:
+  average_bn_buffers: true
+krum:
+  f: 0
+  m: 5
+flame:
+  noise: 0.001
+
+deepsight:
+  clipping_threshold: 0.3333333333
+  threshold_factor: 0.01
+  num_samples: 20000
+  num_seeds: 3
+  batch_size: 128
+  equal_weights: true
+attack:
+  atk_name: scale
+  target_label: 7
+  source_labels: all
+  poison_frac: 0.5
+  pattern_type: square3
+  pattern_pos: bottom_right
+  pattern_padding: 0
+  value: 1.0
+  eval_per_class: 300
+pointillism_fl:
+  probe_mode: two_group
+  base_agg: normbound
+  pairwise_label_agreement: class_avg
+  pairwise_label_k: 1.0
+  grid_hws:
+  - 4
+  - 8
+  - 16
+  - 32
+  random_budget_per_grid: 8192
+  reuse_random_pool_frac: 0.50
+  use_memory_bank: true
+  candidate_top_m: 1024
+  top_k: 96
+  edge_top_k: 256
+  batch_size: 512
+  min_keep_frac: 0.5
+  lambda_cov: 0.35
+  lambda_con: 0.65
+  selection_mode: Consensus
+  color_inertia: 0.0
+  color_group:
+    variants_per_mask: 1
+    sigma_fg: 0.05
+    sigma_bg: 0.05
+    d_min: 0.2
+  q1:
+    tau_R: 0
+  refine:
+    enabled: true
+    candidate_top_m: 64
+    max_labels_per_client: 3
+    seeds_per_label: 4
+    neighbors_per_seed: 8
+    flip_cells: 1
+    swap_cells: 2
+    max_edit_steps: 1
+  w_schedule:
+    mode: pct
+    pcts:
+    - 0.08
+    - 0.16
+    - 0.32
+    - 0.5
+    use_complement: false
+    rounding: nearest
+    clamp:
+    - 1
+    - -1
+    dedup_w: true
+dba_atk:
+  TS: 8
+  TL:
+  - 4
+  - 4
+  TG:
+  - 0
+  - 0
+  layout: grid
+  scale: 1.0

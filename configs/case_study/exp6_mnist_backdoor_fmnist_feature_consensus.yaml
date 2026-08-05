@@ -1,0 +1,114 @@
+experiment:
+  name: exp6_feature_consensus_transfer_mnist_backdoor_fmnist
+  log_root: log_standalone/signature_series
+  seed: 125
+  device: cuda
+
+data:
+  mnist_domain: mnist
+  cross_domain: fmnist
+  data_root: ./data
+  batch_size: 256
+  num_workers: 0
+  pin_memory: true
+  persistent_workers: false
+  mnist_client_fraction: 0.10
+
+model:
+  arch: resnet20
+  num_classes: 10
+
+optimizer:
+  lr: 0.005
+  momentum: 0.9
+  weight_decay: 0.0005
+
+train:
+  max_epochs: 20 #20
+
+backdoor:
+  target_label: 7
+  poison_frac: 0.5
+  pattern_pos: bottom_right
+  pattern_padding: 0
+  value: 1.0
+  seed: 123
+  pattern_type: square3
+  eval_per_class: 50
+
+analysis:
+  feature_consensus_variant: transfer
+  anchor_benign_case: benign1
+  topl_eval_batch_size: 128
+  edge_eval_batch_size: 128
+  focus_pairs:
+    - group: benign_benign
+      display_name: benign1 ↔ benign2
+      case_a: benign1
+      case_b: benign2
+    - group: benign_backdoor
+      display_name: benign1 ↔ backdoored
+      case_a: benign1
+      case_b: backdoor
+    - group: benign_cross_domain
+      display_name: benign1 ↔ diff domain
+      case_a: benign1
+      case_b: cross_domain
+
+search:
+  probe_mode: two_group_gray
+  num_channels: 1
+  grid_hws: [4, 8, 16, 28]
+  random_budget_per_grid: 8000
+  min_candidates_per_class: 1
+  batch_size: 2048
+  seed: 123
+  tau_R: 0
+
+  reuse_random_pool_frac: 0.00
+  use_memory_bank: false
+  candidate_top_m: 2048
+  top_k: 512
+  edge_top_k: 512
+  edge_top_k_per_pair: 512
+  min_keep_frac: 0.5
+  lambda_cov: 0.35
+  lambda_con: 0.65
+  selection_mode: Consensus
+  consensus_objective: mean
+  consensus_quantile_alpha: 0.5
+  color_inertia: 0.0
+
+  w_schedule:
+    mode: pct
+    pcts: [0.08, 0.16, 0.32, 0.50]
+    use_complement: false
+    rounding: nearest
+    clamp: [1, -1]
+    dedup_w: true
+
+  two_group:
+    variants_per_mask: 1
+    sigma_fg: 0.05
+    sigma_bg: 0.05
+    d_min: 0.4
+    value_range: [0.0, 1.0]
+
+  topl:
+    top_l: 64
+    selection_mode: proportional_top
+    prefilter_ratio: 4
+    robustness_batch_size: 512
+    shift_radius_pct: 0
+    shift_include_origin: false
+
+  refine:
+    enabled: true
+    candidate_top_m: 96
+    max_candidates: 32
+    max_labels_per_client: 5
+    seeds_per_label: 6
+    neighbors_per_seed: 16
+    flip_cells: 1
+    swap_cells: 2
+    max_edit_steps: 2

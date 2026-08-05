@@ -1,0 +1,113 @@
+experiment:
+  name: exp8_mnist_prediction_diversity
+  log_root: log_standalone/signature_series
+  seed: 123
+  device: cuda
+
+data:
+  dataset: mnist
+  data_root: ./data
+  batch_size: 256
+  num_workers: 0
+  pin_memory: true
+  persistent_workers: false
+  data_fraction: 0.10
+
+model:
+  arch: resnet20
+  num_classes: 10
+
+optimizer:
+  lr: 0.001
+  momentum: 0.9
+  weight_decay: 0.0005
+
+train:
+  max_epochs: 20
+
+cases:
+  - tag: iid_trained
+    group: iid_trained
+    train: true
+    keep_labels: all
+    seed: 101
+
+  - tag: untrained
+    group: untrained
+    train: false
+    keep_labels: all
+    seed: 102
+
+  - tag: miss_even
+    group: missing_even
+    train: true
+    missing_labels: [0, 2, 4, 6, 8]
+    seed: 103
+
+  - tag: miss_odd
+    group: missing_odd
+    train: true
+    missing_labels: [1, 3, 5, 7, 9]
+    seed: 104
+
+  - tag: miss_2_3
+    group: missing_two_labels
+    train: true
+    missing_labels: [2, 3]
+    seed: 105
+
+# Probe knobs match the Pointillism probing setup described in the paper.
+search:
+  probe_mode: two_group_gray
+  grid_hws: [4, 8, 16, 28]
+  random_budget_per_grid: 8000
+  batch_size: 2048
+  min_candidates_per_class: 1
+  tau_R: 0
+
+  reuse_random_pool_frac: 0.00
+  use_memory_bank: false
+  candidate_top_m: 2048
+  top_k: 512
+  edge_top_k: 512
+  edge_top_k_per_pair: 512
+  min_keep_frac: 0.5
+  lambda_cov: 0.35
+  lambda_con: 0.65
+  selection_mode: Consensus
+  consensus_objective: mean
+  consensus_quantile_alpha: 0.5
+  color_inertia: 0.0
+
+  color_group:
+    variants_per_mask: 1
+    sigma_fg: 0.05
+    sigma_bg: 0.05
+    d_min: 0.4
+
+  w_schedule:
+    mode: pct
+    pcts: [0.08, 0.16, 0.32, 0.50]
+    use_complement: false
+    rounding: nearest
+    clamp: [1, -1]
+    dedup_w: true
+
+  topl:
+    top_l: 64
+    selection_mode: proportional_top
+    prefilter_ratio: 4
+    robustness_batch_size: 512
+    shift_radius_pct: 0
+    shift_include_origin: false
+
+  refine:
+    enabled: true
+    candidate_top_m: 96
+    max_candidates: 32
+    max_labels_per_client: 5
+    seeds_per_label: 6
+    neighbors_per_seed: 16
+    flip_cells: 1
+    swap_cells: 2
+    max_edit_steps: 2

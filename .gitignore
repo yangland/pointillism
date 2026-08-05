@@ -1,0 +1,38 @@
+log_standalone/
+log_fl/
+*.py[cod]
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Generated model and experiment artifacts
+*.pt
+*.pth
+*.ckpt
+wandb/
+outputs/
+
+# Python cache inside repo data package
+data/__pycache__/
+
+# Local dataset payloads
+data/MNIST/
+data/FashionMNIST/
+data/EMNIST/
+data/cifar-10-batches-py
+data/cifar-10-python.tar.gz
+data/cifar-100-python/
+data/cifar-100-python.tar.gz
+data/gtsrb/
+data/train_32x32.mat
+data/test_32x32.mat
+*.zip
+data/SpeechCommands
+*.gz
